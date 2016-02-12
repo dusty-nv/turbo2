@@ -40,7 +40,7 @@ public:
 	/**
 	 * GetNumMotorControllers
 	 */
-	inline const uint32_t GetNumMotorControllers() const										{ return mControllers.size(); }
+	inline uint32_t GetNumMotorControllers() const										{ return mControllers.size(); }
 
 	/**
 	 * GetMotorController

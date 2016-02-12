@@ -9,11 +9,12 @@
 #include "Config.h"
 #include <vector>
 
+
 #define BLUETOOTH_DEVICE "PLAYSTATION(R)3 Controller (64:D4:BD:0C:6D:0D)"
 
 
 /**
- * evdevController
+ * Event Human-Interface Device Controller (/dev/event)
  */
 class evdevController 
 {
