@@ -21,9 +21,16 @@ endif()
 file(GLOB turboSources *.cpp)
 file(GLOB turboIncludes *.h)
 
-add_executable(turbo2 ${turboSources})
+# rpLIDAR sdk
+file(GLOB rpSrcA rplidar-sdk/src/arch/linux/*.cpp)
+file(GLOB rpSrcB rplidar-sdk/src/hal/*.cpp)
+file(GLOB rpSrcC rplidar-sdk/src/*.cpp)
 
-target_link_libraries(turbo2 usb-1.0)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rplidar-sdk/include ${CMAKE_CURRENT_SOURCE_DIR}/rplidar-sdk/src)
+
+add_executable(turbo2 ${turboSources} ${rpSrcA} ${rpSrcB} ${rpSrcC})
+
+target_link_libraries(turbo2 usb-1.0 pthread)
 
 
 

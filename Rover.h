@@ -10,6 +10,7 @@
 #include "UsbManager.h"
 #include "v4l2Camera.h"
 #include "evdevController.h"
+#include "rpLIDAR.h"
 
 
 /**
@@ -37,14 +38,18 @@ public:
 protected:
 
 	Rover();
-	bool Init();
+
+	bool init();
+	bool initMotors();
+	bool initBtController();
 
 	static const uint32_t NumMotorCon = 2;	/**< number of motor controllers */
 
 	MotorController* mMotorCon[NumMotorCon];
 	UsbManager*      mUsbManager;	
 	v4l2Camera*	  mCamera;
-	evdevController* mEvController;
+	evdevController* mBtController;		/**< Bluetooth /dev/event controller */
+	rpLIDAR*		  mLidar;
 };
 
 

@@ -22,15 +22,34 @@ Rover::Rover()
 	
 	mUsbManager   = NULL;
 	mCamera       = NULL;
-	mEvController = NULL;
+	mBtController = NULL;
+	mLidar        = NULL;
 }
 
 
 // destructor
 Rover::~Rover()
 {
+	if( mBtController != NULL )
+	{
+		delete mBtController;
+		mBtController = NULL;
+	}
+
+	for( uint32_t n=0; n < NumMotorCon; n++ )
+	{
+		if( mMotorCon[n] != NULL )
+		{
+			delete mMotorCon[n];
+			mMotorCon[n] = NULL;
+		}
+	}
+
 	if( mUsbManager != NULL )
+	{
 		delete mUsbManager;
+		mUsbManager = NULL;
+	}
 }
 
 
@@ -39,7 +58,7 @@ Rover* Rover::Create()
 {
 	Rover* r = new Rover();
 
-	if( !r->Init() )
+	if( !r->init() )
 	{
 		printf("[rover]  failed to initialize Rover.\n");
 		delete r;
@@ -50,8 +69,51 @@ Rover* Rover::Create()
 }
 
 
-// Init
-bool Rover::Init()
+// init
+bool Rover::init()
+{
+	// init motor controllers
+	if( !initMotors() )
+	{
+		for( uint32_t n=0; n < NumMotorCon; n++ )
+		{
+			if( mMotorCon[n] != NULL )
+			{
+				delete mMotorCon[n];
+				mMotorCon[n] = NULL;
+			}
+		}
+	
+		if( mUsbManager != NULL )
+		{
+			delete mUsbManager;
+			mUsbManager = NULL;
+		}
+	}
+
+	// init bluetooth controller
+	if( !initBtController() )
+	{
+		if( mBtController != NULL )
+		{
+			delete mBtController;
+			mBtController = NULL;
+		}
+	}
+
+	// create V4L2 camera
+	mCamera = v4l2Camera::Create(CAMERA_PATH);
+
+	if( !mCamera )
+		printf("[rover]  failed to initialize V4L2 camera %s\n", CAMERA_PATH);
+
+
+	return true;
+}
+
+
+// initMotors
+bool Rover::initMotors()
 {
 	mUsbManager = new UsbManager();
 
@@ -118,22 +180,19 @@ bool Rover::Init()
 			printf("failed to set 0 speed\n");
 	}
 
+	return true;
+}
+
+
+// initBtController
+bool Rover::initBtController()
+{
 	// create HID controller
-	mEvController = new evdevController();
+	mBtController = new evdevController();
 	
-	if( !mEvController->Open() )
+	if( !mBtController || !mBtController->Open() )
 	{
 		printf("[rover]  failed to open bluetooth controller\n");
-		return false;
-	}
-
-
-	// create V4L2 camera
-	mCamera = v4l2Camera::Create(CAMERA_PATH);
-
-	if( !mCamera )
-	{
-		printf("[rover]  failed to initialize V4L2 camera %s\n", CAMERA_PATH);
 		return false;
 	}
 
@@ -144,19 +203,23 @@ bool Rover::Init()
 // NextEpoch
 bool Rover::NextEpoch()
 {
-	mEvController->Poll();
-
-	for( int i=0; i < NumMotorCon; i++ )
+	if( mBtController != NULL )
 	{
-		float speed = mEvController->Axis[i] * -3200.0f;
+		mBtController->Poll();
 
-		if( speed < -MAX_SPEED )
-			speed = -MAX_SPEED;
+		for( int i=0; i < NumMotorCon; i++ )
+		{
+			float speed = mBtController->Axis[i] * -3200.0f;
 
-		if( speed > MAX_SPEED )
-			speed = MAX_SPEED;
+			if( speed < -MAX_SPEED )
+				speed = -MAX_SPEED;
 
-		mMotorCon[i]->SetSpeed(speed);
+			if( speed > MAX_SPEED )
+				speed = MAX_SPEED;
+
+			if( mMotorCon[i] != NULL )
+				mMotorCon[i]->SetSpeed(speed);
+		}
 	}
 
 	return true;

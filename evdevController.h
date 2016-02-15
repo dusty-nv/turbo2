@@ -24,8 +24,8 @@ public:
 
 	void Poll();
 
-	virtual bool Open();
-	virtual bool Close();
+	bool Open();
+	bool Close();
 
 	float Axis[2];
 

@@ -35,14 +35,11 @@ evdevController::evdevController()
 // destructor	
 evdevController::~evdevController()
 {
-	
+	Close();
 }
 
 
-
-
-
-
+// printAxis
 void evdevController::printAxis()
 {
 	const int numAxis = 16;
