@@ -16,6 +16,7 @@ int main( int argc, char *argv[] )
 	if( !rover )
 		return 0;
 
+	printf("[rover]  starting rover main loop...\n");
 
 	/*
 	 * main event loop
@@ -24,8 +25,6 @@ int main( int argc, char *argv[] )
 	{
 		rover->NextEpoch();
 	}
-
-
 
 	delete rover;
 	return 0;

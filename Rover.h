@@ -11,6 +11,7 @@
 #include "v4l2Camera.h"
 #include "evdevController.h"
 #include "rpLIDAR.h"
+#include "rovernet.h"
 
 
 /**
@@ -50,6 +51,7 @@ protected:
 	v4l2Camera*	  mCamera;
 	evdevController* mBtController;		/**< Bluetooth /dev/event controller */
 	rpLIDAR*		  mLidar;
+	roverNet*		  mRoverNet;
 };
 
 

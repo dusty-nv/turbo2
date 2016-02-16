@@ -24,12 +24,25 @@ Rover::Rover()
 	mCamera       = NULL;
 	mBtController = NULL;
 	mLidar        = NULL;
+	mRoverNet	    = NULL;
 }
 
 
 // destructor
 Rover::~Rover()
 {
+	if( mRoverNet != NULL )
+	{
+		delete mRoverNet;
+		mRoverNet = NULL;
+	}
+
+	if( mLidar != NULL )
+	{
+		delete mLidar;
+		mLidar = NULL;
+	}
+
 	if( mBtController != NULL )
 	{
 		delete mBtController;
@@ -108,6 +121,26 @@ bool Rover::init()
 		printf("[rover]  failed to initialize V4L2 camera %s\n", CAMERA_PATH);
 
 
+	// create roverNet
+	mRoverNet = roverNet::Create();
+
+	if( !mRoverNet )
+		printf("[rover]  failed to create roverNet instance\n");
+
+
+#if 1	
+	/** test code */
+	roverNet::Tensor* tensor = mRoverNet->AllocTensor(5,8);
+
+	if( !tensor )
+		printf("[rover]  failed to allocate test tensor\n");
+
+	if( !mRoverNet->updateNetwork(tensor, NULL, NULL) )
+		printf("[rover]  failed to run test rovernet update\n");
+
+#endif
+
+	printf("[rover]  done initializing rover\n");
 	return true;
 }
 
@@ -203,6 +236,8 @@ bool Rover::initBtController()
 // NextEpoch
 bool Rover::NextEpoch()
 {
+	//printf("[rover]  next_epoch()\n");
+
 	if( mBtController != NULL )
 	{
 		mBtController->Poll();
