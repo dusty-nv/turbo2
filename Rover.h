@@ -36,6 +36,11 @@ public:
 	 */
 	bool NextEpoch();
 
+	/**
+	 * SetGoal
+	 */
+	inline void SetGoal( float goal )	{ if(mGoalTensor) mGoalTensor->cpuPtr[0] = goal; }
+
 
 protected:
 
@@ -55,6 +60,11 @@ protected:
 	phidgetIMU*	  mIMU;
 	roverNet*		  mRoverNet;
 
+	roverNet::Tensor* mIMUTensor;
+	roverNet::Tensor* mOutputTensor;
+	roverNet::Tensor* mGoalTensor;
+
+	static const uint32_t OutputStates = 6;
 	static const uint32_t DownsampleFactor = 2;
 
 	void*             mCameraInputCPU;

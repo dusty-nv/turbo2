@@ -30,6 +30,9 @@ Rover::Rover()
 	mRoverNet	    = NULL;
 	mCameraTensor = NULL;
 	mIMU   	    = NULL;
+	mIMUTensor    = NULL;
+	mOutputTensor = NULL;
+	mGoalTensor   = NULL;
 
 	mCameraInputGPU  = NULL;
 	mCameraInputCPU  = NULL;
@@ -150,6 +153,21 @@ bool Rover::init()
 	
 	if( !mIMU )
 		printf("[rover]  failed to create phidgetIMU\n");	
+
+	mIMUTensor = mRoverNet->AllocTensor(1);
+
+	if( !mIMUTensor )
+		printf("[rover]  failed to alloc IMU tensor\n");
+
+	mOutputTensor = mRoverNet->AllocTensor(OutputStates);
+
+	if( !mOutputTensor )
+		printf("[rover]  failed to alloc Output tensor\n");
+
+	mGoalTensor = mRoverNet->AllocTensor(1);
+
+	if( !mGoalTensor )
+		printf("[rover]  failed to alloc Goal tensor\n");
 
 #if 0	
 	/** test code */
@@ -280,6 +298,9 @@ bool Rover::NextEpoch()
 		if( newIMU )
 		{
 			printf("[rover]  IMU bearing %f degrees\n", bearing * RAD_TO_DEG);
+			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
+
+			mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
 		}
 	}
 
