@@ -19,6 +19,16 @@ if( ${BUILD_DEPS} )
 	message("Finished installing dependencies")
 endif()
 
+find_package(CUDA)
+
+# Pass options to NVCC
+set(
+	CUDA_NVCC_FLAGS
+	${CUDA_NVCC_FLAGS};
+	-O3 -gencode arch=compute_53,code=sm_53
+)
+
+
 # build turbo2
 file(GLOB turboSources *.cpp)
 file(GLOB turboIncludes *.h)
@@ -29,13 +39,13 @@ file(GLOB rpSrcB rplidar-sdk/src/hal/*.cpp)
 file(GLOB rpSrcC rplidar-sdk/src/*.cpp)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rplidar-sdk/include ${CMAKE_CURRENT_SOURCE_DIR}/rplidar-sdk/src)
-include_directories(${ROVERNET_PATH}/c)
+include_directories(${ROVERNET_PATH}/c ${ROVERNET_PATH}/cuda)
 link_directories(${ROVERNET_PATH}/build)
 message("path to rovernet:  ${ROVERNET_PATH}")
 
-add_executable(turbo2 ${turboSources} ${rpSrcA} ${rpSrcB} ${rpSrcC})
+cuda_add_executable(turbo2 ${turboSources} ${rpSrcA} ${rpSrcB} ${rpSrcC})
 
-target_link_libraries(turbo2 usb-1.0 pthread rovernet)
+target_link_libraries(turbo2 usb-1.0 pthread rovernet phidget21)
 
 
 

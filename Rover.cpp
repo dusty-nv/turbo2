@@ -4,6 +4,9 @@
 
 #include "Rover.h"
 
+#include "cudaMappedMemory.h"
+#include "cudaYUV.h"
+#include "cudaResize.h"
 
 #define CAMERA_PATH "/dev/video0"
 
@@ -25,6 +28,13 @@ Rover::Rover()
 	mBtController = NULL;
 	mLidar        = NULL;
 	mRoverNet	    = NULL;
+	mCameraTensor = NULL;
+	mIMU   	    = NULL;
+
+	mCameraInputGPU  = NULL;
+	mCameraInputCPU  = NULL;
+	mCameraResizeCPU = NULL;
+	mCameraResizeGPU = NULL;
 }
 
 
@@ -35,6 +45,12 @@ Rover::~Rover()
 	{
 		delete mRoverNet;
 		mRoverNet = NULL;
+	}
+
+	if( mIMU != NULL )
+	{
+		delete mIMU;
+		mIMU = NULL;
 	}
 
 	if( mLidar != NULL )
@@ -114,6 +130,7 @@ bool Rover::init()
 		}
 	}
 
+
 	// create V4L2 camera
 	mCamera = v4l2Camera::Create(CAMERA_PATH);
 
@@ -127,8 +144,14 @@ bool Rover::init()
 	if( !mRoverNet )
 		printf("[rover]  failed to create roverNet instance\n");
 
+	
+	// create IMU
+	mIMU = phidgetIMU::Create();
+	
+	if( !mIMU )
+		printf("[rover]  failed to create phidgetIMU\n");	
 
-#if 1	
+#if 0	
 	/** test code */
 	roverNet::Tensor* tensor = mRoverNet->AllocTensor(5,8);
 
@@ -141,6 +164,17 @@ bool Rover::init()
 #endif
 
 	printf("[rover]  done initializing rover\n");
+
+	if( mCamera != NULL )
+	{	
+		printf("[rover]  starting camera\n");
+	
+		if( !mCamera->Open() )
+			printf("[rover]  failed to start camera streaming\n");
+
+		printf("[rover]  camera streaming started\n");
+	}
+
 	return true;
 }
 
@@ -237,6 +271,58 @@ bool Rover::initBtController()
 bool Rover::NextEpoch()
 {
 	//printf("[rover]  next_epoch()\n");
+	
+	if( mIMU != NULL )
+	{
+		float bearing = 0.0f;
+		const bool newIMU = mIMU->GetNewBearing(&bearing);
+
+		if( newIMU )
+		{
+			printf("[rover]  IMU bearing %f degrees\n", bearing * RAD_TO_DEG);
+		}
+	}
+
+	if( mCamera != NULL )
+	{
+		void* img = mCamera->Capture();
+
+		if( img != NULL )
+		{
+			const uint32_t width  = mCamera->GetWidth();
+			const uint32_t height = mCamera->GetHeight();
+			const uint32_t pitch  = mCamera->GetPitch();
+			const size_t   size   = pitch * height;
+
+			printf("[rover]  captured image %u x %u  pitch=%u bytes\n", width, height, pitch);
+
+			const uint32_t width2  = width / DownsampleFactor;
+			const uint32_t height2 = height / DownsampleFactor;
+			const uint32_t pitch2  = width2 * sizeof(float);
+			const size_t   size2   = pitch2 * height2;
+
+			if( !mCameraTensor )
+			{
+				mCameraTensor = mRoverNet->AllocTensor(width2, height2);
+
+				cudaAllocMapped(&mCameraInputCPU, &mCameraInputGPU, size);
+				cudaAllocMapped((void**)&mCameraResizeCPU, (void**)&mCameraResizeGPU, width * height * sizeof(float));
+			}
+
+			if( mCameraTensor != NULL )
+			{
+				memcpy(mCameraInputCPU, img, size);
+
+				CUDA(cudaYUYVToGray((uchar2*)mCameraInputGPU, (float*)mCameraResizeGPU, width, height));
+
+				CUDA(cudaResize(mCameraResizeGPU, width * sizeof(float), width, height,
+							 mCameraTensor->gpuPtr, pitch2, width2, height2));
+
+				if( !mRoverNet->updateNetwork(mCameraTensor, NULL, NULL) )
+					printf("[rover]  failed to update roverNet\n");				
+			}
+		}		
+	}
 
 	if( mBtController != NULL )
 	{

@@ -92,7 +92,8 @@ void* v4l2Camera::Capture()
 	}
 	else if( result == 0 )
 	{
-		printf("v4l2 -- select() timed out...\n");
+		if( threaded )
+			printf("v4l2 -- select() timed out...\n");
 		return NULL;	// timeout, not necessarily an error (TRY_AGAIN)
 	}
 
@@ -116,7 +117,7 @@ void* v4l2Camera::Capture()
 	}
 	
 	// emit ringbuffer entry
-	printf("v4l2 -- recieved %ux%u video frame (index=%u)\n", mWidth, mHeight, (uint32_t)buf.index);
+	//printf("v4l2 -- recieved %ux%u video frame (index=%u)\n", mWidth, mHeight, (uint32_t)buf.index);
 
 	void* image_ptr = mBuffersMMap[buf.index].ptr;
 
@@ -248,7 +249,7 @@ bool v4l2Camera::initStream()
 
 	v4l2_print_format(fmt, "preexisting format");
 
-
+#if 0
 	// setup new format
 	struct v4l2_format new_fmt;	
 	memset(&new_fmt, 0, sizeof(v4l2_format));
@@ -291,6 +292,7 @@ bool v4l2Camera::initStream()
 	}
 
 	v4l2_print_format(fmt, "confirmed new format");
+#endif
 
 	mWidth      = fmt.fmt.pix.width;
 	mHeight     = fmt.fmt.pix.height;

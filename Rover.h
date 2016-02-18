@@ -11,6 +11,7 @@
 #include "v4l2Camera.h"
 #include "evdevController.h"
 #include "rpLIDAR.h"
+#include "phidgetIMU.h"
 #include "rovernet.h"
 
 
@@ -51,7 +52,16 @@ protected:
 	v4l2Camera*	  mCamera;
 	evdevController* mBtController;		/**< Bluetooth /dev/event controller */
 	rpLIDAR*		  mLidar;
+	phidgetIMU*	  mIMU;
 	roverNet*		  mRoverNet;
+
+	static const uint32_t DownsampleFactor = 2;
+
+	void*             mCameraInputCPU;
+	void*		   mCameraInputGPU;
+	float*            mCameraResizeCPU;
+	float*		   mCameraResizeGPU;
+	roverNet::Tensor* mCameraTensor;		/**< input video in grayscale floating-point */
 };
 
 
