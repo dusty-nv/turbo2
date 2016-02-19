@@ -265,7 +265,7 @@ bool phidgetIMU::Init()
 	}*/
 
 	//Set the data rate for the spatial events
-	CPhidgetSpatial_setDataRate((CPhidgetSpatialHandle)mHandle, 16);
+	CPhidgetSpatial_setDataRate((CPhidgetSpatialHandle)mHandle, /*16*/ 4);
 
 
 	printf("phidgetIMU -- initialized IMU device\n");

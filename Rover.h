@@ -64,7 +64,7 @@ protected:
 	roverNet::Tensor* mOutputTensor;
 	roverNet::Tensor* mGoalTensor;
 
-	static const uint32_t OutputStates = 6;
+	static const uint32_t OutputStates = 2;
 	static const uint32_t DownsampleFactor = 2;
 
 	void*             mCameraInputCPU;

@@ -286,11 +286,58 @@ bool Rover::initBtController()
 }
 
 
+static bool joyDegree( int coord_x, int coord_y, float* out )
+{
+	const float x = float(coord_x) / 128.0f;
+	const float y = float(coord_y) / 128.0f;
+
+	const float length = sqrtf(x*x+y*y);
+
+	if( length < 1.0f )
+		return false;
+
+	float rad = atan2f(y,x);
+	float deg = rad * RAD_TO_DEG;
+
+	if( deg < 0.0f )
+		deg = 360.0f + deg;
+
+	//printf("joyDegree %f %f %f %f\n", x, y, length, deg);
+
+	if( out != NULL )
+		out[0] = deg;
+
+	return true;
+}
+
+
 // NextEpoch
 bool Rover::NextEpoch()
 {
 	//printf("[rover]  next_epoch()\n");
-	
+	const int controllerAutonomousTriggerLevel = 50;	// range of trigger button is 0-255, when above 50 will trigger autonomous mode	
+
+	if( mBtController != NULL && mBtController->Poll() )
+	{
+		if( mBtController->GetState(evdevController::AXIS_R_BUMPER) <= controllerAutonomousTriggerLevel )
+		{
+			// manual control mode
+			for( int i=0; i < NumMotorCon; i++ )
+			{
+				float speed = mBtController->Axis[i] * -3200.0f;
+
+				if( speed < -MAX_SPEED )
+					speed = -MAX_SPEED;
+
+				if( speed > MAX_SPEED )
+					speed = MAX_SPEED;
+
+				if( mMotorCon[i] != NULL )
+					mMotorCon[i]->SetSpeed(speed);
+			}
+		}
+	}
+
 	if( mIMU != NULL )
 	{
 		float bearing = 0.0f;
@@ -298,10 +345,32 @@ bool Rover::NextEpoch()
 
 		if( newIMU )
 		{
-			printf("[rover]  IMU bearing %f degrees\n", bearing * RAD_TO_DEG);
+			printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mGoalTensor->cpuPtr[0]);
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
-			mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
+			// autonomous mode
+			if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
+			{
+				joyDegree(mBtController->GetState(evdevController::AXIS_RX),
+						mBtController->GetState(evdevController::AXIS_RY),
+						mGoalTensor->cpuPtr);
+
+				mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
+
+				for( int i=0; i < NumMotorCon; i++ )
+				{
+					float speed = mOutputTensor->cpuPtr[i] * MAX_SPEED; //3200.0f;
+
+					if( speed < -MAX_SPEED )
+						speed = -MAX_SPEED;
+
+					if( speed > MAX_SPEED )
+						speed = MAX_SPEED;
+
+					if( mMotorCon[i] != NULL )
+						mMotorCon[i]->SetSpeed(speed);
+				}
+			}
 		}
 		//else
 		//	printf("[rover]  no new IMU data\n");
@@ -348,22 +417,6 @@ bool Rover::NextEpoch()
 		}		
 	}
 
-	if( mBtController != NULL && mBtController->Poll() )
-	{
-		for( int i=0; i < NumMotorCon; i++ )
-		{
-			float speed = mBtController->Axis[i] * -3200.0f;
-
-			if( speed < -MAX_SPEED )
-				speed = -MAX_SPEED;
-
-			if( speed > MAX_SPEED )
-				speed = MAX_SPEED;
-
-			if( mMotorCon[i] != NULL )
-				mMotorCon[i]->SetSpeed(speed);
-		}
-	}
 
 	return true;
 }

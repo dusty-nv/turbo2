@@ -13,6 +13,7 @@
 #define BLUETOOTH_DEVICE "PLAYSTATION(R)3 Controller (64:D4:BD:0C:6D:0D)"
 
 
+
 /**
  * Event Human-Interface Device Controller (/dev/event)
  */
@@ -28,6 +29,18 @@ public:
 	bool Close();
 
 	float Axis[2];
+
+	enum
+	{
+		AXIS_LX = 0,
+		AXIS_LY = 1,
+		AXIS_RX = 2,
+		AXIS_RY = 3,
+		AXIS_R_TRIGGER = 14,
+		AXIS_R_BUMPER  = 15
+	};
+
+	inline int GetState( uint32_t index ) const			{ return mAxisState[index]; }
 
 private:
 
