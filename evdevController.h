@@ -22,7 +22,7 @@ public:
 	evdevController();
 	~evdevController();
 
-	void Poll();
+	bool Poll( uint32_t timeout=0 );
 
 	bool Open();
 	bool Close();

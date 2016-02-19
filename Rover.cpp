@@ -345,10 +345,8 @@ bool Rover::NextEpoch()
 		}		
 	}
 
-	if( mBtController != NULL )
+	if( mBtController != NULL && mBtController->Poll() )
 	{
-		mBtController->Poll();
-
 		for( int i=0; i < NumMotorCon; i++ )
 		{
 			float speed = mBtController->Axis[i] * -3200.0f;

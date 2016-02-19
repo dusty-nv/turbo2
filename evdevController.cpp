@@ -57,12 +57,35 @@ void evdevController::printAxis()
 
 
 // ProcessEmit
-void evdevController::Poll()
+bool evdevController::Poll( uint32_t timeout )
 {
 	const uint32_t max_ev = 64;
 	struct input_event ev[max_ev];
 
 	//printf("evDevcontroller::read()\n");
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(mFD, &fds);
+
+	struct timeval tv;
+ 
+	tv.tv_sec  = 0;
+	tv.tv_usec = timeout*1000;
+
+	const int result = select(mFD + 1, &fds, NULL, NULL, &tv);
+
+	if( result == -1 ) 
+	{
+		//if (EINTR == errno)
+		printf("evdevController -- select() failed (errno=%i) (%s)\n", errno, strerror(errno));
+		return false;
+	}
+	else if( result == 0 )
+	{
+		//printf("evdevController -- select() timed out...\n");
+		return false;	// timeout, not necessarily an error (TRY_AGAIN)
+	}
 
 	const int bytesRead = read(mFD, ev, sizeof(struct input_event) * max_ev);
 
@@ -71,7 +94,7 @@ void evdevController::Poll()
 	if( bytesRead < (int)sizeof(struct input_event) ) 
 	{
 		printf("evdev read() expected %d bytes, got %d\n", (int)sizeof(struct input_event), bytesRead);
-		return;
+		return false;
 	}
 
 
@@ -155,7 +178,7 @@ void evdevController::Poll()
 
 	//printf("%f %f\n", vec[0], vec[1]);
 	Emit(buffer);	*/
-
+	return true;
 }
 
 
