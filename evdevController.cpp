@@ -200,9 +200,15 @@ static char* scan_devices( const char* searchName )
 		return NULL;
 
 	struct dirent **namelist;
-	const int ndev = scandir("/dev/input", &namelist, is_event_device, versionsort);
+	int ndev = scandir("/dev/input", &namelist, is_event_device, versionsort);
+
 	if (ndev <= 0)
-		return NULL;
+	{
+		ndev = scandir("/dev/virtual", &namelist, is_event_device, versionsort);
+
+		if (ndev <= 0)		
+			return NULL;
+	}
 
 	printf("Available devices:\n");
 
