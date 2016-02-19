@@ -3,8 +3,8 @@
 echo "starting Torch display webserver"
 
 cd /home/ubuntu/workspace/rovernet/build/torch/bin/
-ls -ll
-./th -ldisplay.start 80 0.0.0.0
-cd ../../
-./rovernet-console
+sudo ./th -ldisplay.start 80 0.0.0.0
+#sleep 3
+#cd ../../
+#./rovernet-console
 
