@@ -8,6 +8,7 @@
 #include "cudaYUV.h"
 #include "cudaResize.h"
 
+
 #define CAMERA_PATH "/dev/video0"
 
 #define MOTOR_SERIAL_1	"55FF-7306-7084-5457-2709-0267"
@@ -302,6 +303,8 @@ bool Rover::NextEpoch()
 
 			mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
 		}
+		//else
+		//	printf("[rover]  no new IMU data\n");
 	}
 
 	if( mCamera != NULL )

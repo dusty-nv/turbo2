@@ -2,4 +2,4 @@
 
 echo "starting TURBO2"
 
-sudo ./turbo2
+./turbo2
