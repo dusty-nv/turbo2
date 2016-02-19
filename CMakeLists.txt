@@ -59,3 +59,10 @@ endforeach()
 
 
 
+# transfer all startup scripts to bin directory
+file(GLOB scripts scripts/*.sh)
+
+foreach(script ${scripts})
+	message("-- Configuring ${script}")
+	configure_file(${script} ${PROJECT_BINARY_DIR} COPYONLY)
+endforeach()
