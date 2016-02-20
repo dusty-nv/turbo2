@@ -155,7 +155,7 @@ bool evdevController::Poll( uint32_t timeout )
 
 
 	//if( GetFlag(NODE_VERBOSE) )
-		printAxis();
+//		printAxis();
 
 	
 	Axis[0] = float(mAxisState[axisA]) / 128.0f;
@@ -200,11 +200,11 @@ static char* scan_devices( const char* searchName )
 		return NULL;
 
 	struct dirent **namelist;
-	int ndev = scandir("/dev/input", &namelist, is_event_device, versionsort);
+	int ndev = scandir("/dev/event", &namelist, is_event_device, versionsort);
 
 	if (ndev <= 0)
 	{
-		ndev = scandir("/dev/virtual", &namelist, is_event_device, versionsort);
+		ndev = scandir("/dev/input", &namelist, is_event_device, versionsort);
 
 		if (ndev <= 0)		
 			return NULL;
@@ -255,7 +255,7 @@ bool evdevController::Open()
 	char* filename = scan_devices(BLUETOOTH_DEVICE);
 	
 	if( !filename )
-		return false;
+		filename = "/dev/input/event1"; //	return false;
 
 	
 	// open file

@@ -342,19 +342,28 @@ bool Rover::NextEpoch()
 	{
 		float bearing = 0.0f;
 		const bool newIMU = mIMU->GetNewBearing(&bearing);
+//Implement a timer in place of the newImu update. We need to treat this as if(newImu && timeElapsed % k) where k is 
+//some system timer differential that can be used to compute time elapsed. This can be done empirically; we do not care
+//about the actual value of k, only that it is constant and gives enough time that the rover can turn around
+// in a reasonable time
+		static int imu_iter = 0;
 
 		if( newIMU )
 		{
-			printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mGoalTensor->cpuPtr[0]);
+//			printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mGoalTensor->cpuPtr[0]);
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
+			imu_iter++;
+		if( imu_iter % 200 == 0 )
+		{
 			// autonomous mode
 			if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 			{
 				joyDegree(mBtController->GetState(evdevController::AXIS_RX),
 						mBtController->GetState(evdevController::AXIS_RY),
 						mGoalTensor->cpuPtr);
-
+//mGoalTensor needs to be randomly generated to properly train this. Goal tensors should be randomly distributed between 
+//[0,360] and should be generated every pass. The mIMUTensor is fine to be generated 
 				mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
 
 				for( int i=0; i < NumMotorCon; i++ )
@@ -371,6 +380,7 @@ bool Rover::NextEpoch()
 						mMotorCon[i]->SetSpeed(speed);
 				}
 			}
+		}
 		}
 		//else
 		//	printf("[rover]  no new IMU data\n");
