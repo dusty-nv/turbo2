@@ -12,8 +12,8 @@
 #define CAMERA_ACTIVE 0
 #define CAMERA_PATH  "/dev/video0"
 #define RPLIDAR_PATH "/dev/ttyUSB0"
-#define MOTOR_SERIAL_1	"55FF-7306-7084-5457-2709-0267"
-#define MOTOR_SERIAL_2	"55FF-7B06-7084-5457-2608-0267"
+#define MOTOR_SERIAL_1	"55FF-7B06-7084-5457-2608-0267"
+#define MOTOR_SERIAL_2	"55FF-7306-7084-5457-2709-0267"
 
 #define MAX_SPEED 1600.0f
 
@@ -372,8 +372,15 @@ bool Rover::NextEpoch()
 			// manual control mode
 			for( int i=0; i < NumMotorCon; i++ )
 			{
-				float speed = mBtController->Axis[i] * -3200.0f;
+				float speed = 0.0f;
 
+				if( i == 0 )
+					speed = float(mBtController->GetState(evdevController::AXIS_LY)) / -128.0f;
+				else if( i == 1 )
+					speed = float(mBtController->GetState(evdevController::AXIS_RY)) / 128.0f; 
+
+				speed *= MAX_SPEED;
+ 
 				if( speed < -MAX_SPEED )
 					speed = -MAX_SPEED;
 
@@ -399,7 +406,7 @@ bool Rover::NextEpoch()
 
 		if( newIMU )
 		{
-//			printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mGoalTensor->cpuPtr[0]);
+			//printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mGoalTensor->cpuPtr[0]);
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
 			imu_iter++;

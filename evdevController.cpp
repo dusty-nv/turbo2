@@ -155,7 +155,7 @@ bool evdevController::Poll( uint32_t timeout )
 
 
 	//if( GetFlag(NODE_VERBOSE) )
-		//printAxis();
+	//	printAxis();
 
 	
 	Axis[0] = float(mAxisState[axisA]) / 128.0f;
