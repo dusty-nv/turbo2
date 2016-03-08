@@ -6,10 +6,10 @@
 #define __ROVER_OBJECT_H
 
 
-#include "MotorController.h"
 #include "UsbManager.h"
 #include "v4l2Camera.h"
 #include "evdevController.h"
+#include "panTilt.h"
 #include "rpLIDAR.h"
 #include "phidgetIMU.h"
 #include "rovernet.h"
@@ -53,10 +53,12 @@ protected:
 	static const uint32_t NumMotorCon = 2;	/**< number of motor controllers */
 
 	MotorController* mMotorCon[NumMotorCon];
+	ServoController* mServoCon;
 	UsbManager*      mUsbManager;	
+	panTilt*		  mPanTilt;
 	v4l2Camera*	  mCamera;
 	evdevController* mBtController;		/**< Bluetooth /dev/event controller */
-	rpLIDAR*		  mLidar;
+	rpLIDAR*		  mLIDAR;
 	phidgetIMU*	  mIMU;
 	roverNet*		  mRoverNet;
 

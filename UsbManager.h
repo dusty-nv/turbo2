@@ -13,7 +13,7 @@
 #include <libusb-1.0/libusb.h>
 
 #include "MotorController.h"
-
+#include "ServoController.h"
 
 
 /**
@@ -45,8 +45,18 @@ public:
 	/**
 	 * GetMotorController
 	 */
-	inline MotorController* GetMotorController( uint index ) const							{ return mControllers[index]; }
+	inline MotorController* GetMotorController( uint32_t index ) const						{ return mControllers[index]; }
 	
+	/**
+	 * GetNumServoControllers
+	 */
+	inline uint32_t GetNumServoControllers() const										{ return mServos.size(); }
+
+	/**
+	 * GetServoController
+	 */
+	inline ServoController* GetServoController( uint32_t index )							{ return mServos[index]; }
+
 	/**
 	 * FindBySerial
 	 */
@@ -55,6 +65,7 @@ public:
 protected:
 
 	std::vector<MotorController*> mControllers;
+	std::vector<ServoController*> mServos;
 	libusb_context*			mUsbContext;
 };
 

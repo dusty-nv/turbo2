@@ -132,8 +132,8 @@ bool evdevController::Poll( uint32_t timeout )
 				continue;
 			
 			const int axisCurr = ev[i].value;
-			const int axisPrev = mAxisState[ev[i].code];
-			const int axisDiff = axisCurr - axisPrev;
+			//const int axisPrev = mAxisState[ev[i].code];
+			//const int axisDiff = axisCurr - axisPrev;
 		
 			/*if( ev[i].code > 4 )
 			{
@@ -145,9 +145,9 @@ bool evdevController::Poll( uint32_t timeout )
 					execBind(ev[i].code, 0);
 			}*/
 
-			if( axisDiff != 0 )
+			/*if( axisDiff != 0 )
 				if( ev[i].code == axisA || ev[i].code == axisB )	// TEMP only use axis 1 and 3 (Y-axis of left & right joysticks)
-					triggerMsg = true;
+					triggerMsg = true;*/
 
 			mAxisState[ev[i].code] = axisCurr;
 		}
@@ -155,7 +155,7 @@ bool evdevController::Poll( uint32_t timeout )
 
 
 	//if( GetFlag(NODE_VERBOSE) )
-//		printAxis();
+		//printAxis();
 
 	
 	Axis[0] = float(mAxisState[axisA]) / 128.0f;

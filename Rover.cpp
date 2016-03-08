@@ -9,8 +9,9 @@
 #include "cudaResize.h"
 
 
-#define CAMERA_PATH "/dev/video0"
-
+#define CAMERA_ACTIVE 0
+#define CAMERA_PATH  "/dev/video0"
+#define RPLIDAR_PATH "/dev/ttyUSB0"
 #define MOTOR_SERIAL_1	"55FF-7306-7084-5457-2709-0267"
 #define MOTOR_SERIAL_2	"55FF-7B06-7084-5457-2608-0267"
 
@@ -24,10 +25,12 @@ Rover::Rover()
 	for( uint32_t n=0; n < NumMotorCon; n++ )
 		mMotorCon[n] = NULL;
 	
+	mServoCon	    = NULL;
 	mUsbManager   = NULL;
+	mPanTilt	    = NULL;
 	mCamera       = NULL;
 	mBtController = NULL;
-	mLidar        = NULL;
+	mLIDAR        = NULL;
 	mRoverNet	    = NULL;
 	mCameraTensor = NULL;
 	mIMU   	    = NULL;
@@ -57,10 +60,10 @@ Rover::~Rover()
 		mIMU = NULL;
 	}
 
-	if( mLidar != NULL )
+	if( mLIDAR != NULL )
 	{
-		delete mLidar;
-		mLidar = NULL;
+		delete mLIDAR;
+		mLIDAR = NULL;
 	}
 
 	if( mBtController != NULL )
@@ -69,14 +72,19 @@ Rover::~Rover()
 		mBtController = NULL;
 	}
 
-	for( uint32_t n=0; n < NumMotorCon; n++ )
+	if( mPanTilt != NULL )
+	{
+		delete mPanTilt;
+		mPanTilt = NULL;
+	}
+	/*for( uint32_t n=0; n < NumMotorCon; n++ )		// deleted by UsbManager
 	{
 		if( mMotorCon[n] != NULL )
 		{
 			delete mMotorCon[n];
 			mMotorCon[n] = NULL;
 		}
-	}
+	}*/
 
 	if( mUsbManager != NULL )
 	{
@@ -142,6 +150,13 @@ bool Rover::init()
 		printf("[rover]  failed to initialize V4L2 camera %s\n", CAMERA_PATH);
 
 
+	// create rpLIDAR
+	mLIDAR = rpLIDAR::Create(RPLIDAR_PATH);
+
+	if( !mLIDAR )
+		printf("[rover]  failed to create rpLIDAR\n");
+
+
 	// create roverNet
 	mRoverNet = roverNet::Create();
 
@@ -184,6 +199,7 @@ bool Rover::init()
 
 	printf("[rover]  done initializing rover\n");
 
+#if CAMERA_ACTIVE > 0
 	if( mCamera != NULL )
 	{	
 		printf("[rover]  starting camera\n");
@@ -192,6 +208,17 @@ bool Rover::init()
 			printf("[rover]  failed to start camera streaming\n");
 
 		printf("[rover]  camera streaming started\n");
+	}
+#endif
+
+	if( mLIDAR != NULL )
+	{
+		printf("[rover]  starting rpLIDAR\n");
+	
+		if( !mLIDAR->Open() )
+			printf("[rover]  failed to start rpLIDAR streaming\n");
+
+		printf("[rover]  rpLIDAR streaming started\n");
 	}
 
 	return true;
@@ -206,6 +233,9 @@ bool Rover::initMotors()
 	if( !mUsbManager->Init() )
 		return false;
 
+	/**
+	 * Motor controllers
+	 */
 	const uint32_t numDetected = mUsbManager->GetNumMotorControllers();
 
 	printf("[rover]  detected %u USB motor controllers\n", numDetected);
@@ -230,7 +260,7 @@ bool Rover::initMotors()
 
 	for( uint n=0; n < NumMotorCon; n++ )
 	{
-		printf("\n\ncontroller serial:  %s\n\n", mMotorCon[n]->GetSerial());
+		printf("\ncontroller serial:  %s\n\n", mMotorCon[n]->GetSerial());
 
 		MotorController::Variables var;
 		memset(&var, 0, sizeof(MotorController::Variables));
@@ -264,7 +294,23 @@ bool Rover::initMotors()
 
 		if( !mMotorCon[n]->SetSpeed(0) )
 			printf("failed to set 0 speed\n");
+
+		printf("\n");
 	}
+
+	/**
+	 * Servo controller
+	 */
+	const uint32_t numServo = mUsbManager->GetNumServoControllers();
+
+	printf("[rover]  detected %u USB servo controllers\n", numServo);
+
+	if( numServo >= 1 )
+		mServoCon = mUsbManager->GetServoController(0);
+
+	if( mServoCon != NULL )
+		mPanTilt = new panTilt(mServoCon);
+
 
 	return true;
 }
@@ -319,7 +365,9 @@ bool Rover::NextEpoch()
 
 	if( mBtController != NULL && mBtController->Poll() )
 	{
-		if( mBtController->GetState(evdevController::AXIS_R_BUMPER) <= controllerAutonomousTriggerLevel )
+		if( mPanTilt != NULL && mBtController->GetState(evdevController::AXIS_L_BUMPER) >= evdevController::TRIGGER_LEVEL_ACTIVATE )
+			mPanTilt->Update(mBtController);
+		else if( mBtController->GetState(evdevController::AXIS_R_BUMPER) <= controllerAutonomousTriggerLevel )
 		{
 			// manual control mode
 			for( int i=0; i < NumMotorCon; i++ )
@@ -336,6 +384,7 @@ bool Rover::NextEpoch()
 					mMotorCon[i]->SetSpeed(speed);
 			}
 		}
+
 	}
 
 	if( mIMU != NULL )
@@ -354,38 +403,40 @@ bool Rover::NextEpoch()
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
 			imu_iter++;
-		if( imu_iter % 200 == 0 )
-		{
-			// autonomous mode
-			if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
+
+			if( imu_iter % 200 == 0 )
 			{
-				joyDegree(mBtController->GetState(evdevController::AXIS_RX),
-						mBtController->GetState(evdevController::AXIS_RY),
-						mGoalTensor->cpuPtr);
-//mGoalTensor needs to be randomly generated to properly train this. Goal tensors should be randomly distributed between 
-//[0,360] and should be generated every pass. The mIMUTensor is fine to be generated 
-				mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
-
-				for( int i=0; i < NumMotorCon; i++ )
+				// autonomous mode
+				if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 				{
-					float speed = mOutputTensor->cpuPtr[i] * MAX_SPEED; //3200.0f;
+					joyDegree(mBtController->GetState(evdevController::AXIS_RX),
+							mBtController->GetState(evdevController::AXIS_RY),
+							mGoalTensor->cpuPtr);
+	//mGoalTensor needs to be randomly generated to properly train this. Goal tensors should be randomly distributed between 
+	//[0,360] and should be generated every pass. The mIMUTensor is fine to be generated 
+					mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
 
-					if( speed < -MAX_SPEED )
-						speed = -MAX_SPEED;
+					for( int i=0; i < NumMotorCon; i++ )
+					{
+						float speed = mOutputTensor->cpuPtr[i] * MAX_SPEED; //3200.0f;
 
-					if( speed > MAX_SPEED )
-						speed = MAX_SPEED;
+						if( speed < -MAX_SPEED )
+							speed = -MAX_SPEED;
 
-					if( mMotorCon[i] != NULL )
-						mMotorCon[i]->SetSpeed(speed);
+						if( speed > MAX_SPEED )
+							speed = MAX_SPEED;
+
+						if( mMotorCon[i] != NULL )
+							mMotorCon[i]->SetSpeed(speed);
+					}
 				}
 			}
-		}
 		}
 		//else
 		//	printf("[rover]  no new IMU data\n");
 	}
 
+#if 0
 	if( mCamera != NULL )
 	{
 		void* img = mCamera->Capture();
@@ -426,7 +477,7 @@ bool Rover::NextEpoch()
 			}
 		}		
 	}
-
+#endif
 
 	return true;
 }

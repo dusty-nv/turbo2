@@ -30,13 +30,17 @@ public:
 
 	float Axis[2];
 
+	static const int TRIGGER_LEVEL_ACTIVATE = 50;
+
 	enum
 	{
 		AXIS_LX = 0,
 		AXIS_LY = 1,
 		AXIS_RX = 2,
 		AXIS_RY = 3,
-		AXIS_R_TRIGGER = 14,
+		AXIS_L_TRIGGER = 12,
+		AXIS_L_BUMPER  = 14,
+		AXIS_R_TRIGGER = 13,
 		AXIS_R_BUMPER  = 15
 	};
 

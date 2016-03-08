@@ -81,9 +81,25 @@ bool UsbManager::Init()
 
 			mControllers.push_back(ctrl);
 		}
+		else if( desc.idVendor == ServoController::VendorId && desc.idProduct == ServoController::ProductId )
+		{
+			printf("found MAESTRO USB servo controller device\n");
+
+			ServoController* ctrl = new ServoController(devList[n]);
+
+			if( !ctrl->Open() )
+			{
+				delete ctrl;
+				continue;
+			}
+
+			mServos.push_back(ctrl);
+		}
 	}
 		
-	printf("\nUsbManager - opened %u controllers\n", GetNumMotorControllers());
+	printf("\nUsbManager - opened %u motor controllers\n", GetNumMotorControllers());
+	printf("UsbManager - open %u servo controllers\n", GetNumServoControllers());
+
 	return true;
 }
 
