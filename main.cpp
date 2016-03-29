@@ -3,14 +3,52 @@
  */
 
 #include "Rover.h"
+#include "consoleLinux.h"
 
+#include <signal.h>
+
+
+bool quit_flag = false;
+
+void sig_handler(int s)
+{
+	printf("caught signal %i\n", s);
+	quit_flag = true;
+	printf("signalling quit flag...\n");
+	//exit(0);
+}
 
 
 int main( int argc, char *argv[] )
 {
-	printf("rover\n");
+	signal(SIGINT, sig_handler);
 
+	// print the CLI
+	for( int n=0; n < argc; n++ )
+		printf("%s ", argv[n]);
+		
+	printf("\n");
 
+	
+	// get the terminal size, if provided
+	int termCols = 80;
+	int termRows = 24;
+	
+	if( argc == 3 )
+	{
+		termCols = atoi(argv[1]);
+		termRows = atoi(argv[2]);
+		
+		printf("[rover]  terminal size:  %i x %i\n", termCols, termRows);
+	}
+	
+	//const int consoleBottom = termRows/2;
+	//console::setScrollingRegion(1, termRows/2);
+	//console::clearScreen();
+	//console::setEcho(false);
+
+	
+	// create the rover object
 	Rover* rover = Rover::Create();
 
 	if( !rover )
@@ -18,15 +56,25 @@ int main( int argc, char *argv[] )
 
 	printf("[rover]  starting rover main loop...\n");
 
-	/*
-	 * main event loop
-	 */
-	while(true)
+	
+	// main event loop
+	while(!quit_flag)
 	{
+		//printf("quit flag: %i\n", (int)quit_flag);
+		/*if( kbhit() )
+		{
+			printf("keyboard hit\n");
+		}*/
+		
 		rover->NextEpoch();
 	}
 
+	printf("\033[r"); fflush(stdout);
+	printf("closing Rover\n");
 	delete rover;
+	printf("exiting %s process.\n", argv[0]);
+	//console::setEcho(true);
+	//console::resetScrollingRegion();
 	return 0;
 }
 

@@ -29,9 +29,19 @@ public:
 	 */
 	~rpLIDAR();
 
+	/**
+	 * Attempt to retrieve data from the rpLIDAR
+	 */
 	bool Poll();
 
+	/**
+	 * Start the rpLIDAR scanning.
+	 */
 	bool Open();
+	
+	/**
+	 * Stop the rpLIDAR scanning.
+	 */
 	bool Close();
 
 protected:
