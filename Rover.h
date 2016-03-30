@@ -63,16 +63,20 @@ protected:
 	roverNet*		  mRoverNet;
 
 	roverNet::Tensor* mIMUTensor;
+	roverNet::Tensor* mLIDARTensor;
+	roverNet::Tensor* mRangeMap;
 	roverNet::Tensor* mOutputTensor;
 	roverNet::Tensor* mGoalTensor;
 
-	static const uint32_t OutputStates = 2;
+	static const uint32_t RangeMapSize     = 256;
+	static const uint32_t RangeMapMax	   = 5000;
+	static const uint32_t OutputStates     = 2;
 	static const uint32_t DownsampleFactor = 2;
 
 	void*             mCameraInputCPU;
-	void*		   mCameraInputGPU;
+	void*		      mCameraInputGPU;
 	float*            mCameraResizeCPU;
-	float*		   mCameraResizeGPU;
+	float*		   	  mCameraResizeGPU;
 	roverNet::Tensor* mCameraTensor;		/**< input video in grayscale floating-point */
 };
 

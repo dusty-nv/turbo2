@@ -102,7 +102,7 @@ bool rpLIDAR::init( const char* path )
 
 
 // Poll
-bool rpLIDAR::Poll()
+bool rpLIDAR::Poll( float* samples_out, uint32_t timeout )
 {
 	if( !rpConnected() )
 		return false;
@@ -112,7 +112,7 @@ bool rpLIDAR::Poll()
 	rplidar_response_measurement_node_t scan[scanEntriesMax];
 
 	size_t scanEntries    = scanEntriesMax;
-	const u_result result = mDriver->grabScanData(scan, scanEntries);
+	const u_result result = mDriver->grabScanData(scan, scanEntries, timeout);
 
 	if( IS_FAIL(result) )
 	{
@@ -122,12 +122,8 @@ bool rpLIDAR::Poll()
 
 	printf("rpLIDAR -- recieved scan with %zu entries\n", scanEntries);
 
-	return false;
-
-	float* outputPtr    = (float*)NULL/*output->GetCPU()*/;	//typeOf<float>(2), 360
-	size_t validEntries = 0;
-
-	// TODO:  if there are <360 entries, clear buffer memory first
+	memset(samples_out, 0, sizeof(float) * 360);
+	
 	// mDriver->ascendScanData(scan, scanEntries);
 	for( size_t n=0; n < scanEntries; n++ )
 	{
@@ -135,35 +131,14 @@ bool rpLIDAR::Poll()
 		const uint16_t dist   = scan[n].distance_q2;		
 		const uint8_t quality = (scan[n].sync_quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
 
-		//if( verbose )
-		//	printf("  [%03zu]  angle %07.3f   dist %04hu   quality %hhu\n", n, angle, dist, quality);
-
-		//if( dist == 0 )
-		//	continue;
-
-		float dist_out = dist;
-
-		if( dist == 0 || quality < mMinQuality )
-			dist_out = -1.0f;
-		else /*if( verbose )*/
-			printf("  [%03zu]  angle %07.3f   dist %05hu   quality %hhu\n", n, angle, dist, quality);
-
-		const size_t idx = validEntries * 2;
-
-		outputPtr[idx]   = angle /*- 90.0f*/;
-		outputPtr[idx+1] = dist_out;
-
-		validEntries++;
+		if( quality >= mMinQuality )
+			if( angle >= 0.0f && angle <= 360.0f )
+				samples_out[(int)angle] = dist;
+		
+		printf("  [%03zu]  angle %07.3f   dist %05hu   quality %hhu\n", n, angle, dist, quality);
 	}
 
-	if( validEntries == 0 )
-		return false;
-
-	/*if( !output->Resize(validEntries * sizeof(float) * 2) )
-	{
-		printf("rpLIDAR -- failed to resize ringbuffer for %zu scan entries\n", validEntries);
-		return false;
-	}*/
+	return true;
 }
 
 

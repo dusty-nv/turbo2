@@ -7,6 +7,7 @@
 #include "cudaMappedMemory.h"
 #include "cudaYUV.h"
 #include "cudaResize.h"
+#include "cudaRangeMap2D.h"
 
 
 #define CAMERA_ACTIVE 0
@@ -215,6 +216,9 @@ bool Rover::init()
 	{
 		printf("[rover]  starting rpLIDAR\n");
 	
+		mLIDARTensor = mRoverNet->AllocTensor(512);
+		mRangeMap    = mRoverNet->AllocTensor(RangeMapSize, RangeMapSize);
+		
 		if( !mLIDAR->Open() )
 			printf("[rover]  failed to start rpLIDAR streaming\n");
 
@@ -413,6 +417,7 @@ bool Rover::NextEpoch()
 
 			if( imu_iter % 200 == 0 )
 			{
+			#if 0
 				// autonomous mode
 				if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 				{
@@ -437,13 +442,23 @@ bool Rover::NextEpoch()
 							mMotorCon[i]->SetSpeed(speed);
 					}
 				}
+			#endif
 			}
 		}
 		//else
 		//	printf("[rover]  no new IMU data\n");
 	}
 
-#if 0
+	if( mLIDAR != NULL )
+	{
+		if( mLIDAR->Poll(mLIDARTensor->cpuPtr) )
+		{
+			CUDA(cudaRangeMap2D(mLIDARTensor->gpuPtr, mRangeMap->gpuPtr, RangeMapMax,
+								RangeMapSize * sizeof(float), RangeMapSize, RangeMapSize));
+		}
+	}
+	
+#if CAMERA_ACTIVE > 0 
 	if( mCamera != NULL )
 	{
 		void* img = mCamera->Capture();

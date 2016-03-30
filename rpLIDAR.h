@@ -32,7 +32,7 @@ public:
 	/**
 	 * Attempt to retrieve data from the rpLIDAR
 	 */
-	bool Poll();
+	bool Poll( float* samples_out, uint32_t timeout=0 );
 
 	/**
 	 * Start the rpLIDAR scanning.
