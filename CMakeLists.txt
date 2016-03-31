@@ -43,10 +43,25 @@ include_directories(${ROVERNET_PATH}/c ${ROVERNET_PATH}/cuda)
 link_directories(${ROVERNET_PATH}/build)
 message("path to rovernet:  ${ROVERNET_PATH}")
 
+
+# set gstreamer paths
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    set( GST_GLIB_CFG "/usr/lib64/glib-2.0/include" )
+else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    set( GST_GLIB_CFG "/usr/lib/glib-2.0/include" )
+endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
+include_directories( /usr/include/gstreamer-0.10 /usr/include/glib-2.0 ${GST_GLIB_CFG} /usr/include/libxml2 )
+
+if( NOT EXISTS "/usr/include/glib-2.0/glibconfig.h" )
+	include_directories( /usr/lib/arm-linux-gnueabihf/glib-2.0/include )
+endif()
+
+
+# compile executable
 cuda_add_executable(turbo2 ${turboSources} ${rpSrcA} ${rpSrcB} ${rpSrcC})
 
-target_link_libraries(turbo2 usb-1.0 pthread rovernet phidget21)
-
+target_link_libraries(turbo2 usb-1.0 pthread rovernet phidget21 gstreamer-0.10 gstapp-0.10 gobject-2.0 glib-2.0)
 
 
 # transfer all LUA scripts to bin directory
