@@ -7,10 +7,13 @@
 
 
 #include "Config.h"
+
 #include <string>
+#include <vector>
 
 
 namespace rp { namespace standalone{ namespace rplidar { class RPlidarDriver; } } }
+
 
 
 /**
@@ -44,6 +47,29 @@ public:
 	 */
 	bool Close();
 
+	/**
+	 * Add a collision detection zone.
+	 */
+	void AddZone( float angleMin, float angleMax, float distMin, float distMax, uint32_t detectionLimit=5 );
+	
+	/**
+	 * Report if any zones have detected a collision.
+	 */
+	bool CheckZones();
+	
+	/**
+	 * Null out motor controls if they are headed for a collision.
+	 * Returns true if the collision avoidance had to kick in and cancel the controls.
+	 * Otherwise, returns false if the controls were passed through untouched.
+	 */
+	bool AvoidZones( float* controls );
+	
+	/**
+	 * Check if a zone is actively detecting.
+	 */
+	bool ZoneActive( uint32_t index );
+	
+
 protected:
 
 	rpLIDAR();
@@ -54,6 +80,18 @@ protected:
 
 	bool rpConnected();
 	rp::standalone::rplidar::RPlidarDriver* mDriver;
+		
+	struct Zone
+	{
+		float    angleMin;
+		float    angleMax;
+		float    distMin;
+		float    distMax;
+		uint32_t detections;
+		uint32_t detectionLimit;
+	};
+
+	std::vector<Zone*> mZones;
 };
 	
 

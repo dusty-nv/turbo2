@@ -374,25 +374,27 @@ bool Rover::NextEpoch()
 		else if( mBtController->GetState(evdevController::AXIS_R_BUMPER) <= controllerAutonomousTriggerLevel )
 		{
 			// manual control mode
+			float speed[] = { float(mBtController->GetState(evdevController::AXIS_LY)) / -128.0f,
+							  float(mBtController->GetState(evdevController::AXIS_RY)) / 128.0f };
+							  
 			for( int i=0; i < NumMotorCon; i++ )
 			{
-				float speed = 0.0f;
-
-				if( i == 0 )
-					speed = float(mBtController->GetState(evdevController::AXIS_LY)) / -128.0f;
-				else if( i == 1 )
-					speed = float(mBtController->GetState(evdevController::AXIS_RY)) / 128.0f; 
-
-				speed *= MAX_SPEED;
+				speed[i] *= MAX_SPEED;
  
-				if( speed < -MAX_SPEED )
-					speed = -MAX_SPEED;
+				if( speed[i] < -MAX_SPEED )
+					speed[i] = -MAX_SPEED;
 
-				if( speed > MAX_SPEED )
-					speed = MAX_SPEED;
-
+				if( speed[i] > MAX_SPEED )
+					speed[i] = MAX_SPEED;
+			}
+			
+			if( mLIDAR != NULL )
+				mLIDAR->AvoidZones(speed);
+				
+			for( int i=0; i < NumMotorCon; i++ )
+			{
 				if( mMotorCon[i] != NULL )
-					mMotorCon[i]->SetSpeed(speed);
+					mMotorCon[i]->SetSpeed(speed[i]);
 			}
 		}
 
@@ -462,6 +464,8 @@ bool Rover::NextEpoch()
 			
 			if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 			{
+				printf("updating rovernet\n");
+				
 				mRoverNet->updateNetwork(mRangeMap, mRewardTensor, mOutputTensor);
 
 				for( int i=0; i < NumMotorCon; i++ )
