@@ -114,9 +114,14 @@ bool rpLIDAR::Poll( float* samples_out, uint32_t timeout )
 	size_t scanEntries    = scanEntriesMax;
 	const u_result result = mDriver->grabScanData(scan, scanEntries, timeout);
 
-	if( IS_FAIL(result) )
+	if( result == RESULT_OPERATION_TIMEOUT )
 	{
-		printf("rpLIDAR::grabScan(%s) %s  %u %x\n", mPath.c_str(), IS_FAIL(result) ? "FAIL" : "OK", result, result); 	
+		//printf("rpLIDAR::grabScan(%s) %s  %u 0x%x\n", mPath.c_str(), "TIMEOUT", result, result); 
+		return false;
+	}
+	else if( IS_FAIL(result) )
+	{
+		printf("rpLIDAR::grabScan(%s) %s  %u 0x%x\n", mPath.c_str(), IS_FAIL(result) ? "FAIL" : "OK", result, result); 	
 		return false;
 	}
 
@@ -131,7 +136,7 @@ bool rpLIDAR::Poll( float* samples_out, uint32_t timeout )
 		const uint16_t dist   = scan[n].distance_q2;		
 		const uint8_t quality = (scan[n].sync_quality >> RPLIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
 
-		if( quality >= mMinQuality )
+		if( quality >= mMinQuality && dist > 0 )
 			if( angle >= 0.0f && angle <= 360.0f )
 				samples_out[(int)angle] = dist;
 		

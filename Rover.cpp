@@ -37,7 +37,7 @@ Rover::Rover()
 	mIMU   	    = NULL;
 	mIMUTensor    = NULL;
 	mOutputTensor = NULL;
-	mGoalTensor   = NULL;
+	mRewardTensor   = NULL;
 
 	mCameraInputGPU  = NULL;
 	mCameraInputCPU  = NULL;
@@ -181,10 +181,10 @@ bool Rover::init()
 	if( !mOutputTensor )
 		printf("[rover]  failed to alloc Output tensor\n");
 
-	mGoalTensor = mRoverNet->AllocTensor(1);
+	mRewardTensor = mRoverNet->AllocTensor(2);
 
-	if( !mGoalTensor )
-		printf("[rover]  failed to alloc Goal tensor\n");
+	if( !mRewardTensor )
+		printf("[rover]  failed to alloc Reward tensor\n");
 
 #if 0	
 	/** test code */
@@ -216,7 +216,7 @@ bool Rover::init()
 	{
 		printf("[rover]  starting rpLIDAR\n");
 	
-		mLIDARTensor = mRoverNet->AllocTensor(512);
+		mLIDARTensor = mRoverNet->AllocTensor(360);
 		mRangeMap    = mRoverNet->AllocTensor(RangeMapSize, RangeMapSize);
 		
 		if( !mLIDAR->Open() )
@@ -365,7 +365,7 @@ static bool joyDegree( int coord_x, int coord_y, float* out )
 bool Rover::NextEpoch()
 {
 	//printf("[rover]  next_epoch()\n");
-	const int controllerAutonomousTriggerLevel = 50;	// range of trigger button is 0-255, when above 50 will trigger autonomous mode	
+	const int controllerAutonomousTriggerLevel = 40;	// range of trigger button is 0-255, when above 50 will trigger autonomous mode	
 
 	if( mBtController != NULL && mBtController->Poll() )
 	{
@@ -410,7 +410,7 @@ bool Rover::NextEpoch()
 
 		if( newIMU )
 		{
-			//printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mGoalTensor->cpuPtr[0]);
+			//printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mRewardTensor->cpuPtr[0]);
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
 			imu_iter++;
@@ -423,10 +423,10 @@ bool Rover::NextEpoch()
 				{
 					joyDegree(mBtController->GetState(evdevController::AXIS_RX),
 							mBtController->GetState(evdevController::AXIS_RY),
-							mGoalTensor->cpuPtr);
-	//mGoalTensor needs to be randomly generated to properly train this. Goal tensors should be randomly distributed between 
+							mRewardTensor->cpuPtr);
+	//mRewardTensor needs to be randomly generated to properly train this. Goal tensors should be randomly distributed between 
 	//[0,360] and should be generated every pass. The mIMUTensor is fine to be generated 
-					mRoverNet->updateNetwork(mIMUTensor, mGoalTensor, mOutputTensor);
+					mRoverNet->updateNetwork(mIMUTensor, mRewardTensor, mOutputTensor);
 
 					for( int i=0; i < NumMotorCon; i++ )
 					{
@@ -453,8 +453,31 @@ bool Rover::NextEpoch()
 	{
 		if( mLIDAR->Poll(mLIDARTensor->cpuPtr) )
 		{
+			printf("polled LIDAR ok.  running range mapping...\n");
+			
 			CUDA(cudaRangeMap2D(mLIDARTensor->gpuPtr, mRangeMap->gpuPtr, RangeMapMax,
 								RangeMapSize * sizeof(float), RangeMapSize, RangeMapSize));
+								
+			CUDA(cudaDeviceSynchronize());
+			
+			if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
+			{
+				mRoverNet->updateNetwork(mRangeMap, mRewardTensor, mOutputTensor);
+
+				for( int i=0; i < NumMotorCon; i++ )
+				{
+					float speed = mOutputTensor->cpuPtr[i] * MAX_SPEED; //3200.0f;
+
+					if( speed < -MAX_SPEED )
+						speed = -MAX_SPEED;
+
+					if( speed > MAX_SPEED )
+						speed = MAX_SPEED;
+
+					if( mMotorCon[i] != NULL )
+						mMotorCon[i]->SetSpeed(speed);
+				}
+			}
 		}
 	}
 	

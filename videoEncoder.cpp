@@ -189,6 +189,40 @@ videoEncoder::~videoEncoder()
 }
 
 
+// Create
+videoEncoder* videoEncoder::Create( uint32_t width, uint32_t height, const char* filename )
+{
+	videoEncoder* v = new videoEncoder(width, height);
+	
+	v->mOutputPath = filename;
+	
+	if( !v->init() )
+	{
+		delete v;
+		return NULL;
+	}
+	
+	return v;
+}
+
+	
+videoEncoder* videoEncoder::Create( uint32_t width, uint32_t height, const char* ipAddress, uint32_t port )
+{
+	videoEncoder* v = new videoEncoder(width, height);
+	
+	v->mOutputIP   = ipAddress;
+	v->mOutputPort = port;
+	
+	if( !v->init() )
+	{
+		delete v;
+		return NULL;
+	}
+	
+	return v;
+}
+
+
 // onNeed
 void videoEncoder::onNeed(GstElement * pipeline, guint size, gpointer user_data)
 {

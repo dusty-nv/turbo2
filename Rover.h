@@ -39,7 +39,7 @@ public:
 	/**
 	 * SetGoal
 	 */
-	inline void SetGoal( float goal )	{ if(mGoalTensor) mGoalTensor->cpuPtr[0] = goal; }
+	inline void SetGoal( float goal )	{ if(mRewardTensor) mRewardTensor->cpuPtr[0] = goal; }
 
 
 protected:
@@ -57,16 +57,16 @@ protected:
 	UsbManager*      mUsbManager;	
 	panTilt*		  mPanTilt;
 	v4l2Camera*	  mCamera;
-	evdevController* mBtController;		/**< Bluetooth /dev/event controller */
+	evdevController*  mBtController;		/**< Bluetooth /dev/event controller */
 	rpLIDAR*		  mLIDAR;
-	phidgetIMU*	  mIMU;
+	phidgetIMU*	  	  mIMU;
 	roverNet*		  mRoverNet;
 
 	roverNet::Tensor* mIMUTensor;
 	roverNet::Tensor* mLIDARTensor;
 	roverNet::Tensor* mRangeMap;
 	roverNet::Tensor* mOutputTensor;
-	roverNet::Tensor* mGoalTensor;
+	roverNet::Tensor* mRewardTensor;
 
 	static const uint32_t RangeMapSize     = 256;
 	static const uint32_t RangeMapMax	   = 5000;

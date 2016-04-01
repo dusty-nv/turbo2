@@ -22,7 +22,8 @@ struct _GstBuffer;
 class videoEncoder
 {
 public:
-	static videoEncoder* Create( uint32_t width, uint32_t height );
+	static videoEncoder* Create( uint32_t width, uint32_t height, const char* filename );
+	static videoEncoder* Create( uint32_t width, uint32_t height, const char* ipAddress, uint32_t port );
 	~videoEncoder();
 
 	bool Open();

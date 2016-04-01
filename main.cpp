@@ -69,7 +69,6 @@ int main( int argc, char *argv[] )
 		rover->NextEpoch();
 	}
 
-	printf("\033[r"); fflush(stdout);
 	printf("closing Rover\n");
 	delete rover;
 	printf("exiting %s process.\n", argv[0]);
