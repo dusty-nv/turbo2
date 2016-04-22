@@ -388,13 +388,16 @@ bool Rover::NextEpoch()
 					speed[i] = MAX_SPEED;
 			}
 			
-			if( mLIDAR != NULL )
-				mLIDAR->AvoidZones(speed);
+//			if( mLIDAR != NULL )
+//				mLIDAR->AvoidZones(speed);
 				
 			for( int i=0; i < NumMotorCon; i++ )
 			{
 				if( mMotorCon[i] != NULL )
+				{
+					//printf("motor %i  speed %f\n", i, speed[i]);
 					mMotorCon[i]->SetSpeed(speed[i]);
+				}
 			}
 		}
 
@@ -412,17 +415,19 @@ bool Rover::NextEpoch()
 
 		if( newIMU )
 		{
-			//printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mRewardTensor->cpuPtr[0]);
+			printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mRewardTensor->cpuPtr[0]);
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
 			imu_iter++;
 
 			if( imu_iter % 200 == 0 )
 			{
-			#if 0
+			#if 1
 				// autonomous mode
 				if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 				{
+					printf("AUTONOMOUS MODE\n");
+					
 					joyDegree(mBtController->GetState(evdevController::AXIS_RX),
 							mBtController->GetState(evdevController::AXIS_RY),
 							mRewardTensor->cpuPtr);
@@ -455,13 +460,13 @@ bool Rover::NextEpoch()
 	{
 		if( mLIDAR->Poll(mLIDARTensor->cpuPtr) )
 		{
-			printf("polled LIDAR ok.  running range mapping...\n");
+			//printf("polled LIDAR ok.  running range mapping...\n");
 			
 			CUDA(cudaRangeMap2D(mLIDARTensor->gpuPtr, mRangeMap->gpuPtr, RangeMapMax,
 								RangeMapSize * sizeof(float), RangeMapSize, RangeMapSize));
 								
 			CUDA(cudaDeviceSynchronize());
-			
+		#if 0	
 			if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 			{
 				printf("updating rovernet\n");
@@ -482,6 +487,7 @@ bool Rover::NextEpoch()
 						mMotorCon[i]->SetSpeed(speed);
 				}
 			}
+		#endif
 		}
 	}
 	
