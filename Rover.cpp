@@ -13,8 +13,11 @@
 #define CAMERA_ACTIVE 0
 #define CAMERA_PATH  "/dev/video0"
 #define RPLIDAR_PATH "/dev/ttyUSB0"
+
 #define MOTOR_SERIAL_1	"55FF-7B06-7084-5457-2608-0267"
 #define MOTOR_SERIAL_2	"55FF-7306-7084-5457-2709-0267"
+#define MOTOR_SERIAL_2B  "3800-6B06-3055-3932-4029-1643"
+#define MOTOR_SERIAL_1B  "55FF-7F06-7084-5457-2612-0267"
 
 #define MAX_SPEED 1600.0f
 
@@ -26,6 +29,8 @@ Rover::Rover()
 	for( uint32_t n=0; n < NumMotorCon; n++ )
 		mMotorCon[n] = NULL;
 	
+	mVersion	= 2;
+	mEpoch      = 0;
 	mServoCon	    = NULL;
 	mUsbManager   = NULL;
 	mPanTilt	    = NULL;
@@ -256,6 +261,15 @@ bool Rover::initMotors()
 	mMotorCon[0] = mUsbManager->FindBySerial(MOTOR_SERIAL_1);
 	mMotorCon[1] = mUsbManager->FindBySerial(MOTOR_SERIAL_2);
 
+	if( !mMotorCon[0] && !mMotorCon[1] )
+	{
+		mMotorCon[0] = mUsbManager->FindBySerial(MOTOR_SERIAL_1B);
+		mMotorCon[1] = mUsbManager->FindBySerial(MOTOR_SERIAL_2B);
+	
+		if( mMotorCon[0] || mMotorCon[1] )
+			mVersion = 1;	// TURBO1 has the alternate motor controller serial no's
+	}
+
 	if( !mMotorCon[0] || !mMotorCon[1] )
 	{
 		printf("[rover]  failed to confirm motor controllers by serial number (check serials)\n");
@@ -279,7 +293,7 @@ bool Rover::initMotors()
 		printf("errors:       ");
 
 		if( var.errorStatus.safeStart )		printf("safe-start ");
-		if( var.errorStatus.lowVIN )			printf("low-VIN ");
+		if( var.errorStatus.lowVIN )		printf("low-VIN ");
 		if( var.errorStatus.overheat )		printf("overheat ");
 
 		printf("\n");
@@ -367,6 +381,15 @@ bool Rover::NextEpoch()
 	//printf("[rover]  next_epoch()\n");
 	const int controllerAutonomousTriggerLevel = 40;	// range of trigger button is 0-255, when above 50 will trigger autonomous mode	
 
+	if( mEpoch % 25000 == 0 )
+	{
+			for( uint32_t n=0; n < NumMotorCon; n++ )
+			{
+				if( mMotorCon[n] != NULL )
+					mMotorCon[n]->PrintVariables();
+			}
+	}
+	
 	if( mBtController != NULL && mBtController->Poll() )
 	{
 		if( mPanTilt != NULL && mBtController->GetState(evdevController::AXIS_L_BUMPER) >= evdevController::TRIGGER_LEVEL_ACTIVATE )
@@ -379,6 +402,9 @@ bool Rover::NextEpoch()
 							  
 			for( int i=0; i < NumMotorCon; i++ )
 			{
+				if( mVersion == 1 && i == 1 )
+					speed[i] *= -1.0f;
+
 				speed[i] *= MAX_SPEED;
  
 				if( speed[i] < -MAX_SPEED )
@@ -415,7 +441,6 @@ bool Rover::NextEpoch()
 
 		if( newIMU )
 		{
-			printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mRewardTensor->cpuPtr[0]);
 			mIMUTensor->cpuPtr[0] = bearing * RAD_TO_DEG;
 
 			imu_iter++;
@@ -423,6 +448,8 @@ bool Rover::NextEpoch()
 			if( imu_iter % 200 == 0 )
 			{
 			#if 1
+				printf("[rover]  IMU bearing %f degrees   (goal %f)\n", bearing * RAD_TO_DEG, mRewardTensor->cpuPtr[0]);
+				
 				// autonomous mode
 				if( mBtController && mBtController->GetState(evdevController::AXIS_R_BUMPER) > controllerAutonomousTriggerLevel )
 				{
@@ -534,6 +561,7 @@ bool Rover::NextEpoch()
 	}
 #endif
 
+	mEpoch++;
 	return true;
 }
 

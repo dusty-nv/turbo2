@@ -141,6 +141,35 @@ bool MotorController::ControlTransfer( uint8_t requestType, uint8_t request, uin
 } 
 
 
+void MotorController::PrintVariables()
+{
+	MotorController::Variables var;
+	memset(&var, 0, sizeof(MotorController::Variables));
+
+	if( !ReadVariables(&var) )
+	{
+		printf("failed to read status of motor %s\n", mSerial.c_str());
+		return;
+	}
+
+	printf("status of motor %s\n", mSerial.c_str());
+	
+	// print variables
+	printf("   errors:       ");
+
+	if( var.errorStatus.safeStart )		printf("safe-start ");
+	if( var.errorStatus.lowVIN )		printf("low-VIN ");
+	if( var.errorStatus.overheat )		printf("overheat ");
+
+	printf("\n");
+
+	printf("   targetSpeed:  %i\n", var.targetSpeed);
+	printf("   speed:        %i\n", var.speed);
+	printf("   brake:        %u\n", var.brake);
+	printf("   temperature:  %f degrees C\n", ((float)var.temperature * 0.1f));
+	printf("   voltage:      %f V\n", ((float)var.voltage * 0.001f));
+}
+
 #if 0
 #define PRINT_ENUM(var, x)	if(var.x) printf(#x  " ");
 

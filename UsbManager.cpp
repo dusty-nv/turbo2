@@ -69,7 +69,8 @@ bool UsbManager::Init()
 
 		printf("   [%02u]   vendor %#04x\t\tproduct %#04x\n", n, desc.idVendor, desc.idProduct);
 
-		if( desc.idVendor == MotorController::VendorId && desc.idProduct == MotorController::ProductId )
+		if( desc.idVendor == MotorController::VendorId && 
+		  (desc.idProduct == MotorController::ProductId_24v12 || desc.idProduct == MotorController::ProductId_18v15))
 		{
 			MotorController* ctrl = new MotorController(devList[n]);
 

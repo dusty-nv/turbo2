@@ -255,8 +255,13 @@ bool evdevController::Open()
 	char* filename = scan_devices(BLUETOOTH_DEVICE);
 	
 	if( !filename )
-		filename = "/dev/input/event1"; //	return false;
+		filename = scan_devices(BLUETOOTH_DEVICE2);
 
+	if( !filename )
+	{
+		printf("evdevController - failed to find Bluetooth device\n");
+		return false; //filename = "/dev/input/event1";	
+	}
 	
 	// open file
 	mFD = open(filename, O_RDONLY);

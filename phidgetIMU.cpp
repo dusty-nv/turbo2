@@ -7,7 +7,7 @@
 #include <phidget21.h>
 
 
-#define DEBUG_SPATIAL
+//#define DEBUG_SPATIAL
 
 
 // constructor

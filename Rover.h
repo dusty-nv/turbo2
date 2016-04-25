@@ -78,6 +78,9 @@ protected:
 	float*            mCameraResizeCPU;
 	float*		   	  mCameraResizeGPU;
 	roverNet::Tensor* mCameraTensor;		/**< input video in grayscale floating-point */
+
+	uint8_t mVersion; 	// 1 for TURBO1, 2 for TURBO2
+	uint64_t mEpoch;
 };
 
 

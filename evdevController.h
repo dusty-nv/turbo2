@@ -10,8 +10,8 @@
 #include <vector>
 
 
-#define BLUETOOTH_DEVICE "PLAYSTATION(R)3 Controller (64:D4:BD:0C:6D:0D)"
-
+#define BLUETOOTH_DEVICE  "PLAYSTATION(R)3 Controller (64:D4:BD:0C:6D:0D)"
+#define BLUETOOTH_DEVICE2 "PLAYSTATION(R)3 Controller (AC:7A:4D:23:A3:6D)"
 
 
 /**

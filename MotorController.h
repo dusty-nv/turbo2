@@ -57,8 +57,8 @@ public:
 	/**
 	 * Usb Product Id
 	 */
-	static const uint16_t ProductId = 0x9A; //0x98;		// 18v15
-
+	static const uint16_t ProductId_24v12 = 0x9A;
+	static const uint16_t ProductId_18v15 = 0x98;
 
 	/**
 	 * ErrorStatus
@@ -305,7 +305,8 @@ public:
 	bool SetSpeed( Direction dir, int value );
 
 	bool ReadVariables( Variables* var );
-
+	void PrintVariables();
+	
 	bool ExitSafeStart();
 
 	inline const char* GetSerial() const								{ return mSerial.c_str(); }
