@@ -22,7 +22,7 @@
 | Auvidea | [Auvidea J120](http://igg.me/at/cJ7dDQkO6lw/x/13380589) | 1* |
 | ConnectTech | [ConnectTech Orbitty](http://www.wdlsystems.com/Computer-on-Module/Carrier-Boards/CTI-Orbitty-Carrier-for-NVIDIA-Jetson-TX1.html) | 1* |
 
-* Either Auvidea 120 or ConnectTech Orbitty mini-carriers for Jetson TX1 can be chosen.
+* Recommended either [Auvidea J120](http://igg.me/at/cJ7dDQkO6lw/x/13380589) or [ConnectTech Orbitty](http://www.wdlsystems.com/Computer-on-Module/Carrier-Boards/CTI-Orbitty-Carrier-for-NVIDIA-Jetson-TX1.html) mini-carriers for Jetson TX1, or similar can be used.
 
 ### Shared Electronics/Sensors
 
