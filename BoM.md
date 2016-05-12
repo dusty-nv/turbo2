@@ -30,6 +30,6 @@
 | ------------ | ------------- | ----- |
 | NVIDIA     | [Jetson TX1 Developer Kit](https://developer.nvidia.com/embedded/buy/jetson-tx1-devkit) | 1 |
 | Stereolabs | [ZED depth camera](https://www.stereolabs.com/zed/specs/) | 1 |
-| RoboPeak | [rpLIDAR](http://www.slamtec.com/en/lidar) | 1 |
+| RoboPeak | [rpLIDAR rangefinder](http://www.slamtec.com/en/lidar) | 1 |
 | Phidgets | [Phidget 9-DoF IMU](http://www.phidgets.com/products.php?product_id=1044) | 1 |
 | GlobalSat | [BU-353 GPS Reciever](http://www.amazon.com/GlobalSat-BU-353-Receiver-Discontinued-Manufacturer/dp/B000PKX2KA) | 1 |
