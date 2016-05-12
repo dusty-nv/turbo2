@@ -17,6 +17,7 @@
 | Vendor       | Part          | Qty.  |
 | ------------ | ------------- | ----- |
 | Nexus Robot | [Tracked Robot Kit](http://www.robotshop.com/en/arduino-tracked-mobile-tank-robot-kit.html) | 1 |
+| Polulu | [12V 15A motor controllers](https://www.pololu.com/product/1376) | 2 |
 | Lynxmotion | [12V 2800mAh NiMH battery](http://www.robotshop.com/en/120v-2800mah-rechargeable-nimh-battery-pack.html) | 1 |
 | Auvidea | [Auvidea J120](http://igg.me/at/cJ7dDQkO6lw/x/13380589) | 1* |
 | ConnectTech | [ConnectTech Orbitty](http://www.wdlsystems.com/Computer-on-Module/Carrier-Boards/CTI-Orbitty-Carrier-for-NVIDIA-Jetson-TX1.html) | 1* |
