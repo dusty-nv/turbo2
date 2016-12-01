@@ -1,7 +1,13 @@
 /*
- * Copyright (c) 2014, RoboPeak
- * All rights reserved.
+ *  RPLIDAR SDK
  *
+ *  Copyright (c) 2009 - 2014 RoboPeak Team
+ *  http://www.robopeak.com
+ *  Copyright (c) 2014 - 2016 Shanghai Slamtec Co., Ltd.
+ *  http://www.slamtec.com
+ *
+ */
+/*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -23,14 +29,6 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
-/*
- *  RoboPeak LIDAR System
- *  Serial Device Driver for MacOS
- *
- *  Copyright 2009 - 2014 RoboPeak Team
- *  http://www.robopeak.com
  *
  */
 
@@ -125,12 +123,11 @@ bool raw_serial::open(const char * portname, uint32_t baudrate, uint32_t flags)
         return false;
     }
     
-    //Clear the DTR bit to let the motor spin
-    uint32_t controll = TIOCM_DTR;
-    ioctl(serial_fd, TIOCMBIC, &controll);
-    
-    
     _is_serial_opened = true;
+
+    //Clear the DTR bit to let the motor spin
+    clearDTR();
+    
     return true;
 }
 
@@ -274,6 +271,21 @@ size_t raw_serial::rxqueue_count()
     return remaining;
 }
 
+void raw_serial::setDTR()
+{
+    if ( !isOpened() ) return;
+
+    uint32_t dtr_bit = TIOCM_DTR;
+    ioctl(serial_fd, TIOCMBIS, &dtr_bit);
+}
+
+void raw_serial::clearDTR()
+{
+    if ( !isOpened() ) return;
+
+    uint32_t dtr_bit = TIOCM_DTR;
+    ioctl(serial_fd, TIOCMBIC, &dtr_bit);
+}
 
 void raw_serial::_init()
 {

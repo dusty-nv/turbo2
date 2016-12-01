@@ -1,7 +1,13 @@
 /*
- * Copyright (c) 2014, RoboPeak
- * All rights reserved.
+ *  RPLIDAR SDK
  *
+ *  Copyright (c) 2009 - 2014 RoboPeak Team
+ *  http://www.robopeak.com
+ *  Copyright (c) 2014 - 2016 Shanghai Slamtec Co., Ltd.
+ *  http://www.slamtec.com
+ *
+ */
+/*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -25,18 +31,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-/*
- *  RoboPeak LIDAR System
- *  High Resolution Timer Impl on MacOS
- *
- *  Copyright 2009 - 2014 RoboPeak Team
- *  http://www.robopeak.com
- *
- */
 
 #pragma once
 
 #include "rptypes.h"
+
+#include <unistd.h>
+static inline void delay(_word_size_t ms){
+    while (ms>=1000){
+        usleep(1000*1000);
+        ms-=1000;
+    };
+    if (ms!=0)
+        usleep(ms*1000);
+}
 
 // TODO: the highest timer interface should be clock_gettime
 namespace rp{ namespace arch{
