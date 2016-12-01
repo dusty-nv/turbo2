@@ -75,9 +75,9 @@ endforeach()
 
 
 # transfer all startup scripts to bin directory
-file(GLOB scripts scripts/*.sh)
+file(GLOB init_scripts scripts/init*.sh)
 
-foreach(script ${scripts})
-	message("-- Configuring ${script}")
-	configure_file(${script} ${PROJECT_BINARY_DIR} COPYONLY)
+foreach(init_script ${init_scripts})
+	message("-- Configuring ${init_script}")
+	configure_file(${init_script} ${PROJECT_BINARY_DIR} COPYONLY)
 endforeach()
