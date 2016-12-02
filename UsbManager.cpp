@@ -82,7 +82,8 @@ bool UsbManager::Init()
 
 			mControllers.push_back(ctrl);
 		}
-		else if( desc.idVendor == ServoController::VendorId && desc.idProduct == ServoController::ProductId )
+		else if( desc.idVendor == ServoController::VendorID && 
+			    (desc.idProduct == ServoController::ProductID_6ch || desc.idProduct == ServoController::ProductID_12ch || desc.idProduct == ServoController::ProductID_18ch) )
 		{
 			printf("found MAESTRO USB servo controller device\n");
 

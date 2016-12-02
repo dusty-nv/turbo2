@@ -130,7 +130,7 @@ bool rpLIDAR::Poll( float* samples_out, uint32_t timeout )
 	}
 	else if( IS_FAIL(result) )
 	{
-		printf("rpLIDAR::grabScan(%s) %s  %u 0x%x\n", mPath.c_str(), IS_FAIL(result) ? "FAIL" : "OK", result, result); 	
+		//printf("rpLIDAR::grabScan(%s) %s  %u 0x%x\n", mPath.c_str(), IS_FAIL(result) ? "FAIL" : "OK", result, result); 	
 		return false;
 	}
 

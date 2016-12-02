@@ -47,13 +47,14 @@ public:
 	/**
 	 * Usb Vendor Id
 	 */
-	static const uint16_t VendorId = 0x1ffb;		// Pololu Corporation
+	static const uint16_t VendorID = 0x1ffb;		// Pololu Corporation
 
 	/**
 	 * Usb Product Id
 	 */
-	static const uint16_t ProductId = 0x89;			// Maestro 6-channel
-
+	static const uint16_t ProductID_6ch  = 0x89;			// Maestro 6-channel
+	static const uint16_t ProductID_12ch = 0x8a;			// Maestro 12-channel
+	static const uint16_t ProductID_18ch = 0x8b;			// Maestro 18-channel
 
 	/**
  	 * Set servo position

@@ -31,8 +31,8 @@ public:
 	 */
 	void Update( evdevController* userController );
 	
-	static const uint8_t PAN_CHANNEL  = 4;
-	static const uint8_t TILT_CHANNEL = 5;
+	static const uint8_t PAN_CHANNEL  = 0;
+	static const uint8_t TILT_CHANNEL = 1;
 
 	static const uint16_t PAN_CENTER  = 1650;
 	static const uint16_t PAN_LEFT    = 2000;
