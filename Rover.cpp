@@ -393,7 +393,9 @@ bool Rover::NextEpoch()
 	if( mBtController != NULL && mBtController->Poll() )
 	{
 		if( mPanTilt != NULL && mBtController->GetState(evdevController::AXIS_L_BUMPER) >= evdevController::TRIGGER_LEVEL_ACTIVATE )
+		{
 			mPanTilt->Update(mBtController);
+		}
 		else if( mBtController->GetState(evdevController::AXIS_R_BUMPER) <= controllerAutonomousTriggerLevel )
 		{
 			// manual control mode
