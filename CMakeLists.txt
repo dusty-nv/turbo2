@@ -5,8 +5,9 @@ project(turbo2)
 
 # if this is the first time running cmake, perform pre-build dependency install script (or if the user manually triggers re-building the dependencies)
 set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies.  Automatically reset to NO after dependencies are installed.")
-set(ROVERNET_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../rovernet" CACHE FILEPATH "Path to rovernet repo")
-
+set(ROVERNET_PATH "${PROJECT_BINARY_DIR}/rovernet" CACHE FILEPATH "Path to rovernet repo")
+set(INFERENCE_PATH "${PROJECT_BINARY_DIR}/jetson-inference" CACHE FILEPATH "Path to jetson-inference repo")
+#set(ROVERNET_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../rovernet" CACHE FILEPATH "Path to rovernet repo")
 
 if( ${BUILD_DEPS} )
 	message("Launching pre-build dependency installer script...")
@@ -44,24 +45,10 @@ link_directories(${ROVERNET_PATH}/build)
 message("path to rovernet:  ${ROVERNET_PATH}")
 
 
-# set gstreamer paths
-if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    set( GST_GLIB_CFG "/usr/lib64/glib-2.0/include" )
-else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-    set( GST_GLIB_CFG "/usr/lib/glib-2.0/include" )
-endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-
-include_directories( /usr/include/gstreamer-0.10 /usr/include/glib-2.0 ${GST_GLIB_CFG} /usr/include/libxml2 )
-
-if( NOT EXISTS "/usr/include/glib-2.0/glibconfig.h" )
-	include_directories( /usr/lib/arm-linux-gnueabihf/glib-2.0/include )
-endif()
-
-
 # compile executable
 cuda_add_executable(turbo2 ${turboSources} ${rpSrcA} ${rpSrcB} ${rpSrcC})
 
-target_link_libraries(turbo2 usb-1.0 pthread rovernet phidget21 gstreamer-0.10 gstapp-0.10 gobject-2.0 glib-2.0)
+target_link_libraries(turbo2 usb-1.0 pthread rovernet phidget21)
 
 
 # transfer all LUA scripts to bin directory
@@ -81,3 +68,4 @@ foreach(init_script ${init_scripts})
 	message("-- Configuring ${init_script}")
 	configure_file(${init_script} ${PROJECT_BINARY_DIR} COPYONLY)
 endforeach()
+
