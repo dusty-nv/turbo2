@@ -491,6 +491,9 @@ bool Rover::NextEpoch()
 		{
 			//printf("polled LIDAR ok.  running range mapping...\n");
 			
+			if( mLIDAR->CheckZones() )
+				printf("LIDAR detected obstacle(s)...\n");
+
 			CUDA(cudaRangeMap2D(mLIDARTensor->gpuPtr, mRangeMap->gpuPtr, RangeMapMax,
 								RangeMapSize * sizeof(float), RangeMapSize, RangeMapSize));
 								

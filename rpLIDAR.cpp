@@ -23,7 +23,7 @@ rpLIDAR::rpLIDAR()
 		
 	AddZone(0.0f, 40.0f, 1.0f, 2000.0f, 3);
 	AddZone(325.0f, 361.0f, 1.0f, 2000.0f, 3);
-	AddZone(150.0f, 210.0f, 1000.0f, 2000.0f, 6);
+	//AddZone(150.0f, 210.0f, 1000.0f, 2000.0f, 6);
 }
 
 
@@ -225,9 +225,12 @@ bool rpLIDAR::AvoidZones( float* controls )
 	const uint32_t numZones = mZones.size();
 	bool detected = false;
 	
-	if( numZones != 3 )
+	if( numZones < 2 )
+	{
+		printf("rpLIDAR::AvoidZones() -- not enough LIDAR zones\n");
 		return false;
-		
+	}
+
 	if( !controls )
 		return false;
 		
@@ -242,7 +245,7 @@ bool rpLIDAR::AvoidZones( float* controls )
 		}
 	}
 	
-	if( ZoneActive(2) )
+	if( numZones > 2 && ZoneActive(2) )
 	{
 		if( controls[0] < 0.0f || controls[1] < 0.0f )
 		{

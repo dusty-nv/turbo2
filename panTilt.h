@@ -38,7 +38,7 @@ public:
 	static const uint16_t PAN_LEFT    = 2000;
 	static const uint16_t PAN_RIGHT   = 1280;
 
-	static const uint16_t TILT_CENTER = 1540;
+	static const uint16_t TILT_CENTER = 1440;
 	static const uint16_t TILT_DOWN   = 1950;
 	static const uint16_t TILT_UP     = 1000;
 
