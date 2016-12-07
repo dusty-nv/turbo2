@@ -7,6 +7,7 @@
 
 
 #include "UsbManager.h"
+#include "ArmController.h"
 #include "v4l2Camera.h"
 #include "evdevController.h"
 #include "panTilt.h"
@@ -55,6 +56,7 @@ protected:
 	MotorController* mMotorCon[NumMotorCon];
 	ServoController* mServoCon;
 	UsbManager*      mUsbManager;	
+	ArmController*    mArmController;
 	panTilt*		  mPanTilt;
 	v4l2Camera*	  mCamera;
 	evdevController*  mBtController;		/**< Bluetooth /dev/event controller */

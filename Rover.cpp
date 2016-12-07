@@ -36,6 +36,7 @@ Rover::Rover()
 	mPanTilt	    = NULL;
 	mCamera       = NULL;
 	mBtController = NULL;
+	mArmController = NULL;
 	mLIDAR        = NULL;
 	mRoverNet	    = NULL;
 	mCameraTensor = NULL;
@@ -327,7 +328,10 @@ bool Rover::initMotors()
 		mServoCon = mUsbManager->GetServoController(0);
 
 	if( mServoCon != NULL )
-		mPanTilt = new panTilt(mServoCon);
+	{
+		mPanTilt       = new panTilt(mServoCon);
+		mArmController = new ArmController(mServoCon);
+	}
 
 
 	return true;
@@ -395,6 +399,10 @@ bool Rover::NextEpoch()
 		if( mPanTilt != NULL && mBtController->GetState(evdevController::AXIS_L_BUMPER) >= evdevController::TRIGGER_LEVEL_ACTIVATE )
 		{
 			mPanTilt->Update(mBtController);
+		}
+		else if( mArmController != NULL && mBtController->GetState(evdevController::AXIS_L_TRIGGER) >= evdevController::TRIGGER_LEVEL_ACTIVATE )
+		{
+			mArmController->Update(mBtController);
 		}
 		else if( mBtController->GetState(evdevController::AXIS_R_BUMPER) <= controllerAutonomousTriggerLevel )
 		{
