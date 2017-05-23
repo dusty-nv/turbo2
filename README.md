@@ -1,4 +1,8 @@
-# turbo2
+## turbo2+
+
+![Alt text](https://github.com/dusty-nv/turbo2/raw/master/docs/images/turbo2+.jpg)
+
+## turbo2
 
 ![Alt text](https://github.com/dusty-nv/turbo2/raw/master/docs/images/turbo2_front.jpg)
 
