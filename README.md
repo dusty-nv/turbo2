@@ -11,9 +11,11 @@ All the materials and code for building the robot are released here on GitHub.  
 ##
 
 ![Alt text](https://github.com/dusty-nv/turbo2/raw/master/docs/images/turbo2_front.jpg)
+<!---
 ## 
 
 ![Alt text](https://github.com/dusty-nv/turbo2/raw/master/docs/images/turbo2_rear.jpg)
+-->
 ## turbo1
 
 ![Alt text](https://github.com/dusty-nv/turbo2/raw/master/docs/images/turbo1-tk1.jpg)
